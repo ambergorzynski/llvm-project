@@ -2450,7 +2450,7 @@ static unsigned getPtrCmpOpcode(unsigned Pred) {
 static unsigned getBoolCmpOpcode(unsigned PredNum) {
   auto Pred = static_cast<CmpInst::Predicate>(PredNum);
   switch (Pred) {
-  case CmpInst::ICMP_EQ: 
+  case CmpInst::ICMP_EQ:
     return SPIRV::OpLogicalEqual;
   case CmpInst::ICMP_NE:
     return SPIRV::OpLogicalNotEqual;
