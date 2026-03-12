@@ -643,7 +643,6 @@ bool Vreg1LoweringHelper::lowerCopiesToI1() {
           PDT->findNearestCommonDominator(DomBlocks);
       unsigned FoundLoopLevel = LF.findLoop(PostDomBound);
       if (FoundLoopLevel) {
-        abort();
         SSAUpdater.Initialize(DstReg);
         SSAUpdater.AddAvailableValue(&MBB, DstReg);
         LF.addLoopEntries(FoundLoopLevel, SSAUpdater, *MRI, LaneMaskRegAttrs);
