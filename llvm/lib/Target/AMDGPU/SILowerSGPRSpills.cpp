@@ -340,9 +340,10 @@ void SILowerSGPRSpills::updateLaneVGPRDomInstr(
       // Find the common dominator block between PrevInsertPt and the
       // current spill.
       DomMBB = MDT->findNearestCommonDominator(DomMBB, MBB);
-      if (DomMBB == MBB)
+      if (DomMBB == MBB) {
+        abort();
         I->second = InsertPt;
-      else if (DomMBB != PrevInsertPt->getParent())
+      } else if (DomMBB != PrevInsertPt->getParent())
         I->second = &(*DomMBB->getFirstTerminator());
     }
   }
