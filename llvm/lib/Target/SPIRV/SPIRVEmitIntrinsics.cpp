@@ -1230,8 +1230,10 @@ void SPIRVEmitIntrinsics::deduceOperandElementTypeFunctionPointer(
       IsNewFTy = true;
       RetTy =
           getTypedPointerWrapper(ElemTy, getPointerAddressSpace(CI->getType()));
-      if (isTodoType(CI))
+      if (isTodoType(CI)) {
+        abort();
         IsIncomplete = true;
+      }
     } else {
       IsIncomplete = true;
     }
