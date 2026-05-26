@@ -73,7 +73,7 @@ void OmpStructureChecker::Enter(const parser::ProgramUnit &) { //
   ClearLabels();
 }
 
-bool OmpStructureChecker::Enter(const parser::MainProgram &x) {
+void OmpStructureChecker::Enter(const parser::MainProgram &x) {
   using StatementProgramStmt = parser::Statement<parser::ProgramStmt>;
   if (auto &stmt{std::get<std::optional<StatementProgramStmt>>(x.t)}) {
     scopeStack_.push_back(stmt->statement.v.symbol->scope());
@@ -86,14 +86,13 @@ bool OmpStructureChecker::Enter(const parser::MainProgram &x) {
       }
     }
   }
-  return true;
 }
 
 void OmpStructureChecker::Leave(const parser::MainProgram &x) {
   scopeStack_.pop_back();
 }
 
-bool OmpStructureChecker::Enter(const parser::BlockData &x) {
+void OmpStructureChecker::Enter(const parser::BlockData &x) {
   // The BLOCK DATA name is optional, so we need to look for the
   // corresponding scope in the global scope.
   auto &stmt{std::get<parser::Statement<parser::BlockDataStmt>>(x.t)};
@@ -109,29 +108,26 @@ bool OmpStructureChecker::Enter(const parser::BlockData &x) {
       }
     }
   }
-  return true;
 }
 
 void OmpStructureChecker::Leave(const parser::BlockData &x) {
   scopeStack_.pop_back();
 }
 
-bool OmpStructureChecker::Enter(const parser::Module &x) {
+void OmpStructureChecker::Enter(const parser::Module &x) {
   auto &stmt{std::get<parser::Statement<parser::ModuleStmt>>(x.t)};
   const Symbol *sym{stmt.statement.v.symbol};
   scopeStack_.push_back(sym->scope());
-  return true;
 }
 
 void OmpStructureChecker::Leave(const parser::Module &x) {
   scopeStack_.pop_back();
 }
 
-bool OmpStructureChecker::Enter(const parser::Submodule &x) {
+void OmpStructureChecker::Enter(const parser::Submodule &x) {
   auto &stmt{std::get<parser::Statement<parser::SubmoduleStmt>>(x.t)};
   const Symbol *sym{std::get<parser::Name>(stmt.statement.t).symbol};
   scopeStack_.push_back(sym->scope());
-  return true;
 }
 
 void OmpStructureChecker::Leave(const parser::Submodule &x) {
@@ -140,43 +136,36 @@ void OmpStructureChecker::Leave(const parser::Submodule &x) {
 
 // Function/subroutine subprogram nodes don't appear in INTERFACEs, but
 // the subprogram/end statements do.
-bool OmpStructureChecker::Enter(const parser::SubroutineStmt &x) {
+void OmpStructureChecker::Enter(const parser::SubroutineStmt &x) {
   const Symbol *sym{std::get<parser::Name>(x.t).symbol};
   scopeStack_.push_back(sym->scope());
-  return true;
 }
 
-bool OmpStructureChecker::Enter(const parser::EndSubroutineStmt &x) {
+void OmpStructureChecker::Enter(const parser::EndSubroutineStmt &x) {
   scopeStack_.pop_back();
-  return true;
 }
 
-bool OmpStructureChecker::Enter(const parser::FunctionStmt &x) {
+void OmpStructureChecker::Enter(const parser::FunctionStmt &x) {
   const Symbol *sym{std::get<parser::Name>(x.t).symbol};
   scopeStack_.push_back(sym->scope());
-  return true;
 }
 
-bool OmpStructureChecker::Enter(const parser::EndFunctionStmt &x) {
+void OmpStructureChecker::Enter(const parser::EndFunctionStmt &x) {
   scopeStack_.pop_back();
-  return true;
 }
 
-bool OmpStructureChecker::Enter(const parser::MpSubprogramStmt &x) {
+void OmpStructureChecker::Enter(const parser::MpSubprogramStmt &x) {
   const Symbol *sym{x.v.symbol};
   scopeStack_.push_back(sym->scope());
-  return true;
 }
 
-bool OmpStructureChecker::Enter(const parser::EndMpSubprogramStmt &x) {
+void OmpStructureChecker::Enter(const parser::EndMpSubprogramStmt &x) {
   scopeStack_.pop_back();
-  return true;
 }
 
-bool OmpStructureChecker::Enter(const parser::BlockConstruct &x) {
+void OmpStructureChecker::Enter(const parser::BlockConstruct &x) {
   auto &endBlockStmt{std::get<parser::Statement<parser::EndBlockStmt>>(x.t)};
   scopeStack_.push_back(&context_.FindScope(endBlockStmt.source));
-  return true;
 }
 
 void OmpStructureChecker::Leave(const parser::BlockConstruct &x) {
@@ -1149,7 +1138,7 @@ void OmpStructureChecker::Enter(const parser::OmpBlockConstruct &x) {
           "directives outside of the TEAMS construct"_err_en_US);
     }
     if (GetContext().directive == llvm::omp::Directive::OMPD_workdistribute &&
-        GetContextParent().directive != llvm::omp::Directive::OMPD_teams) {
+        !llvm::omp::bottomTeamsSet.test(GetContextParent().directive)) {
       context_.Say(x.BeginDir().DirName().source,
           "%s region can only be strictly nested within TEAMS region"_err_en_US,
           ContextDirectiveAsFortran());
@@ -1653,6 +1642,19 @@ void OmpStructureChecker::Enter(const parser::OmpDeclareSimdDirective &x) {
 
   const Scope &containingScope = context_.FindScope(dirName.source);
   const Scope &progUnitScope = GetProgramUnitContaining(containingScope);
+
+  // A DECLARE SIMD directive may legally appear in an interface body, but it
+  // applies to the external procedure being declared rather than to any
+  // definition in this compilation. Flang does not propagate the directive to
+  // callers, so it has no effect; warn the user instead of silently ignoring
+  // it. See https://github.com/llvm/llvm-project/issues/192581.
+  if (const Symbol *progUnitSym{progUnitScope.symbol()}) {
+    if (const auto *subpDetails{progUnitSym->detailsIf<SubprogramDetails>()};
+        subpDetails && subpDetails->isInterface()) {
+      context_.Warn(common::UsageWarning::OpenMPUsage, dirName.source,
+          "'DECLARE SIMD' directive in an interface body has no effect"_warn_en_US);
+    }
+  }
 
   for (const parser::OmpClause &clause : x.v.Clauses().v) {
     const auto *u = std::get_if<parser::OmpClause::Uniform>(&clause.u);
