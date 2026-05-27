@@ -3846,7 +3846,7 @@ bool SIInstrInfo::foldImmediate(MachineInstr &UseMI, MachineInstr &DefMI,
         return false;
 
       if (!Src2->isReg() || RI.isSGPRClass(MRI->getRegClass(Src2->getReg())))
-        return false;
+      {assert(0 && "Uncovered line 1"); return false;}
 
       // If src2 is also a literal constant then we have to choose which one to
       // fold. In general it is better to choose madak so that the other literal
@@ -6061,7 +6061,7 @@ unsigned SIInstrInfo::getVALUOp(unsigned Opc) const {
   case AMDGPU::S_CVT_F32_I32: return AMDGPU::V_CVT_F32_I32_e64;
   case AMDGPU::S_CVT_F32_U32: return AMDGPU::V_CVT_F32_U32_e64;
   case AMDGPU::S_CVT_I32_F32: return AMDGPU::V_CVT_I32_F32_e64;
-  case AMDGPU::S_CVT_U32_F32: {assert(0 && "Uncovered line 1"); return AMDGPU::V_CVT_U32_F32_e64;}
+  case AMDGPU::S_CVT_U32_F32: {assert(0 && "Uncovered line 2"); return AMDGPU::V_CVT_U32_F32_e64;}
   case AMDGPU::S_CVT_F32_F16:
   case AMDGPU::S_CVT_HI_F32_F16:
     return ST.useRealTrue16Insts() ? AMDGPU::V_CVT_F32_F16_t16_e64
@@ -6122,18 +6122,18 @@ unsigned SIInstrInfo::getVALUOp(unsigned Opc) const {
   case AMDGPU::S_FMAAK_F32: return AMDGPU::V_FMAAK_F32;
   case AMDGPU::S_CMP_LT_F32: return AMDGPU::V_CMP_LT_F32_e64;
   case AMDGPU::S_CMP_EQ_F32: return AMDGPU::V_CMP_EQ_F32_e64;
-  case AMDGPU::S_CMP_LE_F32: return AMDGPU::V_CMP_LE_F32_e64;
-  case AMDGPU::S_CMP_GT_F32: return AMDGPU::V_CMP_GT_F32_e64;
+  case AMDGPU::S_CMP_LE_F32: {assert(0 && "Uncovered line 3"; return AMDGPU::V_CMP_LE_F32_e64;}
+					     case AMDGPU::S_CMP_GT_F32: {assert(0 && "Uncovered line 4") return AMDGPU::V_CMP_GT_F32_e64;}
   case AMDGPU::S_CMP_LG_F32: return AMDGPU::V_CMP_LG_F32_e64;
-  case AMDGPU::S_CMP_GE_F32: {assert(0 && "Uncovered line 2"); return AMDGPU::V_CMP_GE_F32_e64;}
+  case AMDGPU::S_CMP_GE_F32: {assert(0 && "Uncovered line 5"); return AMDGPU::V_CMP_GE_F32_e64;}
   case AMDGPU::S_CMP_O_F32: return AMDGPU::V_CMP_O_F32_e64;
   case AMDGPU::S_CMP_U_F32: return AMDGPU::V_CMP_U_F32_e64;
   case AMDGPU::S_CMP_NGE_F32: return AMDGPU::V_CMP_NGE_F32_e64;
-  case AMDGPU::S_CMP_NLG_F32: {assert(0 && "Uncovered line 3"); return AMDGPU::V_CMP_NLG_F32_e64;}
+  case AMDGPU::S_CMP_NLG_F32: {assert(0 && "Uncovered line 6"); return AMDGPU::V_CMP_NLG_F32_e64;}
   case AMDGPU::S_CMP_NGT_F32: return AMDGPU::V_CMP_NGT_F32_e64;
-  case AMDGPU::S_CMP_NLE_F32: return AMDGPU::V_CMP_NLE_F32_e64;
+  case AMDGPU::S_CMP_NLE_F32: {assert(0 && "Uncovered line 7"); return AMDGPU::V_CMP_NLE_F32_e64;}
   case AMDGPU::S_CMP_NEQ_F32: return AMDGPU::V_CMP_NEQ_F32_e64;
-  case AMDGPU::S_CMP_NLT_F32: return AMDGPU::V_CMP_NLT_F32_e64;
+  case AMDGPU::S_CMP_NLT_F32: {assert(0 && "Uncovered line 8"); return AMDGPU::V_CMP_NLT_F32_e64;}
   case AMDGPU::S_CMP_LT_F16:
     return ST.useRealTrue16Insts() ? AMDGPU::V_CMP_LT_F16_t16_e64
                                    : AMDGPU::V_CMP_LT_F16_fake16_e64;
@@ -11113,7 +11113,7 @@ bool SIInstrInfo::invertSCCUse(MachineInstr *SCCDef) const {
   for (MachineInstr &MI :
        make_range(std::next(MachineBasicBlock::iterator(SCCDef)), MBB->end())) {
     if (++Count > ScanLimit)
-      return false;
+    {assert(0 && "Uncovered line 9"; return false;}
     if (MI.readsRegister(AMDGPU::SCC, &RI)) {
       if (MI.getOpcode() == AMDGPU::S_CSELECT_B32 ||
           MI.getOpcode() == AMDGPU::S_CSELECT_B64 ||
@@ -11124,8 +11124,8 @@ bool SIInstrInfo::invertSCCUse(MachineInstr *SCCDef) const {
         return false;
     }
     if (MI.definesRegister(AMDGPU::SCC, &RI)) {
-      SCCIsDead = true;
-      break;
+    {assert 0 && "Uncovered line 10"); SCCIsDead = true;
+      break;}
     }
   }
   if (!SCCIsDead && isSCCDeadOnExit(MBB))
