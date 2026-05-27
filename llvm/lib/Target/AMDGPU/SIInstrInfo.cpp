@@ -6061,7 +6061,7 @@ unsigned SIInstrInfo::getVALUOp(unsigned Opc) const {
   case AMDGPU::S_CVT_F32_I32: return AMDGPU::V_CVT_F32_I32_e64;
   case AMDGPU::S_CVT_F32_U32: return AMDGPU::V_CVT_F32_U32_e64;
   case AMDGPU::S_CVT_I32_F32: return AMDGPU::V_CVT_I32_F32_e64;
-  case AMDGPU::S_CVT_U32_F32: return AMDGPU::V_CVT_U32_F32_e64;
+  case AMDGPU::S_CVT_U32_F32: {assert(0 && "Uncovered line 1"); return AMDGPU::V_CVT_U32_F32_e64;}
   case AMDGPU::S_CVT_F32_F16:
   case AMDGPU::S_CVT_HI_F32_F16:
     return ST.useRealTrue16Insts() ? AMDGPU::V_CVT_F32_F16_t16_e64
@@ -6125,11 +6125,11 @@ unsigned SIInstrInfo::getVALUOp(unsigned Opc) const {
   case AMDGPU::S_CMP_LE_F32: return AMDGPU::V_CMP_LE_F32_e64;
   case AMDGPU::S_CMP_GT_F32: return AMDGPU::V_CMP_GT_F32_e64;
   case AMDGPU::S_CMP_LG_F32: return AMDGPU::V_CMP_LG_F32_e64;
-  case AMDGPU::S_CMP_GE_F32: return AMDGPU::V_CMP_GE_F32_e64;
+  case AMDGPU::S_CMP_GE_F32: {assert(0 && "Uncovered line 2"); return AMDGPU::V_CMP_GE_F32_e64;}
   case AMDGPU::S_CMP_O_F32: return AMDGPU::V_CMP_O_F32_e64;
   case AMDGPU::S_CMP_U_F32: return AMDGPU::V_CMP_U_F32_e64;
   case AMDGPU::S_CMP_NGE_F32: return AMDGPU::V_CMP_NGE_F32_e64;
-  case AMDGPU::S_CMP_NLG_F32: return AMDGPU::V_CMP_NLG_F32_e64;
+  case AMDGPU::S_CMP_NLG_F32: {assert(0 && "Uncovered line 3"); return AMDGPU::V_CMP_NLG_F32_e64;}
   case AMDGPU::S_CMP_NGT_F32: return AMDGPU::V_CMP_NGT_F32_e64;
   case AMDGPU::S_CMP_NLE_F32: return AMDGPU::V_CMP_NLE_F32_e64;
   case AMDGPU::S_CMP_NEQ_F32: return AMDGPU::V_CMP_NEQ_F32_e64;
